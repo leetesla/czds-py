@@ -17,6 +17,9 @@ import os
 import sys
 from collections import defaultdict
 
+from app_config.config import load_config
+
+
 def filter_domain(domain):
     """
     过滤域名：排除点号数量超过2个的域名，以及含有双连字符的域名
@@ -133,31 +136,41 @@ def find_new_domains(old_file, new_file, output_file):
         print(f"保存文件时出错: {e}")
         return False
 
-def main():
+
+def diff_domains():
+    try:
+        config = load_config()
+    except RuntimeError as exc:
+        sys.stderr.write("{0}\n".format(str(exc)))
+        sys.exit(1)
+
+    tlds = config.get("tlds", [])
+
     # 默认参数
-    OLD_DATE = "251019"
-    NEW_DATE = "251021"
-    SUFFIX = "org"
-    BASE_DIR = "czds"
+    OLD_DIR = "001"
+    NEW_DIR = "zonefiles"
+    DIFF_DIR = "diff"
+    BASE_DIR = "download"
     
     # 如果提供了命令行参数，则使用参数
     if len(sys.argv) == 4:
-        OLD_DATE = sys.argv[1]
-        NEW_DATE = sys.argv[2]
-        SUFFIX = sys.argv[3]
+        OLD_DIR = sys.argv[1]
+        NEW_DIR = sys.argv[2]
+        tlds = sys.argv[3]
     elif len(sys.argv) != 1:
         print("用法: python3 fast_diff_domain.py [旧日期] [新日期] [后缀]")
         print("例如: python3 fast_diff_domain.py 251019 251021 org")
-        print(f"如果不提供参数，则默认使用 {OLD_DATE} 和 {NEW_DATE} 的 {SUFFIX} 域名文件")
+        print(f"如果不提供参数，则默认使用 {OLD_DIR} 和 {NEW_DIR} 的 {tlds} 域名文件")
         sys.exit(1)
+
+    for tld in tlds:
+        # 构造文件名
+        old_file = f"{BASE_DIR}/{OLD_DIR}/{tld}.txt"
+        new_file = f"{BASE_DIR}/{NEW_DIR}/{tld}.txt"
+        output_file = f"{BASE_DIR}/{DIFF_DIR}/{tld}.txt"
     
-    # 构造文件名
-    old_file = f"{BASE_DIR}/{OLD_DATE}-{SUFFIX}-domains.txt"
-    new_file = f"{BASE_DIR}/{NEW_DATE}-{SUFFIX}-domains.txt"
-    output_file = f"{BASE_DIR}/{NEW_DATE}-{SUFFIX}-new-domains.txt"
-    
-    # 执行域名比较
-    find_new_domains(old_file, new_file, output_file)
+        # 执行域名比较
+        find_new_domains(old_file, new_file, output_file)
 
 if __name__ == '__main__':
-    main()
+    diff_domains()
