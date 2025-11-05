@@ -6,7 +6,7 @@ from scripts.unzip_zone_files import unzip_zone_files
 
 if __name__ == "__main__":
     # download()
-    unzip_zone_files("download")
-    # diff_domains()
-    # merge2all()
-    # find_duplicate()
+    # unzip_zone_files("download")
+    diff_domains()
+    merge2all()
+    find_duplicate()

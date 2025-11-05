@@ -10,7 +10,6 @@ python3 fast_diff_domain.py [旧日期] [新日期] [后缀]
 
 例如: python3 fast_diff_domain.py 251019 251021 org
 
-如果不提供参数，则默认使用 251019 和 251021 的 org 域名文件
 """
 
 import os
