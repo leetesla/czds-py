@@ -8,5 +8,6 @@ config.json
 zonefiles/
 zonefiles/**
 .venv
-
+download/
+README.txt
 __*
