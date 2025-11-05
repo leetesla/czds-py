@@ -34,7 +34,7 @@ def normalize_domain(domain):
         str: 标准化后的域名
     """
     # 移除常见的顶级域名后缀
-    common_suffixes = ['.org.', '.com.', '.net.', '.edu.', '.gov.', '.mil.', '.int.']
+    common_suffixes = ['.org.', '.com.', '.net.', '.edu.', '.gov.', '.mil.', '.int.', '.online.']
     for suffix in common_suffixes:
         if domain.endswith(suffix):
             domain = domain[:-len(suffix)]  # 移除后缀
@@ -173,11 +173,11 @@ def find_duplicate_domains(input_file, output_file, html_output_file=None):
         print(f"处理文件时出错: {e}")
         return False
 
-def main():
+def find_duplicate():
     # 默认文件路径
-    default_input = '/Users/chrise/app/util-script/domains/251021-org-domains-no-digits.txt'
-    default_output = '/Users/chrise/app/util-script/domains/duplicate_domains.txt'
-    default_html_output = '/Users/chrise/app/util-script/domains/duplicate_domains.html'
+    default_input = 'output/all.txt'
+    default_output = 'output/duplicate.txt'
+    default_html_output = 'output/duplicate_domains.html'
     
     # 获取命令行参数
     if len(sys.argv) >= 3:
@@ -198,4 +198,4 @@ def main():
     find_duplicate_domains(input_file, output_file, html_output_file)
 
 if __name__ == '__main__':
-    main()
+    find_duplicate()
