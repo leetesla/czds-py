@@ -22,7 +22,7 @@ from app_config.config import load_config
 
 def filter_domain(domain):
     """
-    过滤域名：排除点号数量超过2个的域名，以及含有双连字符的域名
+    过滤域名：排除点号数量超过2个的域名，以及含有双连字符的域名，以及含有数字超过2个的域名
     
     Args:
         domain (str): 域名
@@ -36,8 +36,12 @@ def filter_domain(domain):
     # 检查是否含有双连字符
     has_double_dash = '--' in domain
     
-    # 保留点号数量不超过2个且不含有双连字符的域名
-    return dot_count <= 2 and not has_double_dash
+    # 计算数字数量
+    digit_count = sum(1 for char in domain if char.isdigit())
+    
+    # 保留点号数量不超过2个且不含有双连字符且数字数量不超过2个的域名
+    return dot_count < 2 and not has_double_dash and digit_count < 2
+
 
 def find_new_domains(old_file, new_file, output_file):
     """
