@@ -37,12 +37,14 @@ def normalize_domain(domain):
     Returns:
         str: 标准化后的域名
     """
-    # 移除常见的顶级域名后缀
-    common_suffixes = ['.org', '.com', '.net', '.edu', '.gov', '.mil', '.int', '.online']
-    for suffix in common_suffixes:
-        if domain.endswith(suffix):
-            domain = domain[:-len(suffix)]  # 移除后缀
-            break
+    # 先判断最后一个是不是"."，如果是，先去掉
+    if domain.endswith('.'):
+        domain = domain[:-1]
+    
+    # 重新获取最后一个"."的位置，去掉"."和它后面的后缀
+    last_dot_index = domain.rfind('.')
+    if last_dot_index != -1:
+        domain = domain[:last_dot_index]
     
     # 移除所有的 "-"
     normalized = domain.replace('-', '')

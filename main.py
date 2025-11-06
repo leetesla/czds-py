@@ -13,14 +13,14 @@ if __name__ == "__main__":
     # print("******* unzip_zone_files() ********")
     # unzip_zone_files("download")
 
-    # print("********* extract_first_column_from_directory() ********")
-    # extract_first_column_from_directory(DIR_DOWNLOAD_ZONEFILES, DIR_OUTPUT_DOMAINS_002)
+    print("********* extract_first_column_from_directory() ********")
+    extract_first_column_from_directory(DIR_DOWNLOAD_ZONEFILES, DIR_OUTPUT_DOMAINS_002)
 
     print("********* diff_domains() ********")
-    # diff_domains()
+    diff_domains()
 
     print("******** merge2all() ********")
-    # merge2all()
+    merge2all()
 
 
     print("******* find_duplicate() ********")
