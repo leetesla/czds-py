@@ -24,8 +24,9 @@ import sys
 import sqlite3
 from collections import defaultdict
 from datetime import datetime, timedelta
+import shutil
 
-from app_config.constant import DUPLICATE_MIN_COUNT
+from app_config.constant import DUPLICATE_MIN_COUNT, DIR_PUBLIC
 from util import FILE_OUTPUT_DOMAINS_NEW_ALL, FILE_OUTPUT_DOMAINS_DUPLICATE, \
     HTML_OUTPUT_DOMAINS_DUPLICATE, DB_FILE, get_date_string
 
@@ -191,6 +192,18 @@ def find_duplicate_domains_from_db(output_file, html_output_file=None, days=7):
     # 如果指定了HTML输出文件，则生成HTML格式的文件
     if html_output_file:
         generate_html_output(duplicates, html_output_file)
+        
+        # 将html_output_file复制到DIR_PUBLIC目录下，重命名为date_str.html
+        date_str = get_date_string()
+        public_html_file = os.path.join(DIR_PUBLIC, date_str + '.html')
+        try:
+            # 确保public目录存在
+            os.makedirs(DIR_PUBLIC, exist_ok=True)
+            # 复制文件
+            shutil.copy2(html_output_file, public_html_file)
+            print(f"HTML文件已复制到: {public_html_file}")
+        except Exception as e:
+            print(f"复制HTML文件到public目录时出错: {e}")
     
     # 输出统计信息
     print(f"处理完成!")
