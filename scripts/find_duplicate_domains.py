@@ -29,13 +29,13 @@ from app_config.constant import FILE_OUTPUT_DOMAINS_DIFF_ALL, FILE_OUTPUT_DOMAIN
 
 def get_domain_keyword(domain):
     """
-    标准化域名，移除常见顶级域名后缀并移除所有"-"
+    移除常见顶级域名后缀并移除所有"-"
     
     Args:
         domain (str): 原始域名
         
     Returns:
-        str: 标准化后的域名
+        str: 标准化后的域名 keyword
     """
     # 先判断最后一个是不是"."，如果是，先去掉
     if domain.endswith('.'):
