@@ -23,6 +23,10 @@ import os
 import sys
 from collections import defaultdict
 
+from app_config.constant import FILE_OUTPUT_DOMAINS_DIFF_ALL, FILE_OUTPUT_DOMAINS_DUPLICATE, \
+    HTML_OUTPUT_DOMAINS_DUPLICATE
+
+
 def normalize_domain(domain):
     """
     标准化域名，移除常见顶级域名后缀并移除所有"-"
@@ -175,9 +179,9 @@ def find_duplicate_domains(input_file, output_file, html_output_file=None):
 
 def find_duplicate():
     # 默认文件路径
-    default_input = 'output/all.txt'
-    default_output = 'output/duplicate.txt'
-    default_html_output = 'output/duplicate_domains.html'
+    default_input = FILE_OUTPUT_DOMAINS_DIFF_ALL
+    default_output = FILE_OUTPUT_DOMAINS_DUPLICATE
+    default_html_output = HTML_OUTPUT_DOMAINS_DUPLICATE
     
     # 获取命令行参数
     if len(sys.argv) >= 3:

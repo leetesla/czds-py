@@ -18,6 +18,7 @@ import sys
 import time
 
 from app_config.config import load_config
+from app_config.constant import DIR_OUTPUT_DOMAINS_001, DIR_OUTPUT_DOMAINS_002, DIR_OUTPUT_DOMAINS_DIFF
 
 
 def filter_domain(domain):
@@ -178,10 +179,10 @@ def diff_domains():
     tlds = config.get("tlds", [])
 
     # 默认参数
-    OLD_DIR = "001"
-    NEW_DIR = "zonefiles"
-    DIFF_DIR = "diff"
-    BASE_DIR = "download"
+    OLD_DIR = DIR_OUTPUT_DOMAINS_001
+    NEW_DIR = DIR_OUTPUT_DOMAINS_002
+    DIFF_DIR = DIR_OUTPUT_DOMAINS_DIFF
+    # BASE_DIR = "download"
     
     # 如果提供了命令行参数，则使用参数
     if len(sys.argv) == 4:
@@ -196,9 +197,9 @@ def diff_domains():
 
     for tld in tlds:
         # 构造文件名
-        old_file = f"{BASE_DIR}/{OLD_DIR}/{tld}.txt"
-        new_file = f"{BASE_DIR}/{NEW_DIR}/{tld}.txt"
-        output_file = f"{BASE_DIR}/{DIFF_DIR}/{tld}.txt"
+        old_file = f"{OLD_DIR}/{tld}.txt"
+        new_file = f"{NEW_DIR}/{tld}.txt"
+        output_file = f"{DIFF_DIR}/{tld}.txt"
     
         # 执行域名比较
         find_new_domains(old_file, new_file, output_file)

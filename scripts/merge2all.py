@@ -1,14 +1,13 @@
 import os
 
+from app_config.constant import DIR_OUTPUT_DOMAINS_DIFF, FILE_OUTPUT_DOMAINS_DIFF_ALL
+
+
 def merge2all():
     # 将download/diff文件夹下所有.txt文件合并 输出到 output/all.txt中
-    input_dir = os.path.join('download', 'diff')
-    output_dir = 'output'
-    output_file = os.path.join(output_dir, 'all.txt')
-    
-    # 确保输出目录存在
-    os.makedirs(output_dir, exist_ok=True)
-    
+    input_dir = DIR_OUTPUT_DOMAINS_DIFF
+    output_file = FILE_OUTPUT_DOMAINS_DIFF_ALL
+
     # 检查输入目录是否存在
     if not os.path.exists(input_dir):
         print(f"目录 {input_dir} 不存在")
