@@ -234,6 +234,7 @@ def find_duplicate(default_days=7):
     
     # 执行查找重复域名
     find_duplicate_domains_from_db(output_file, html_output_file, days)
+    date_str = get_date_string()
 
 if __name__ == '__main__':
     find_duplicate(1)

@@ -10,4 +10,5 @@ DIR_OUTPUT_DOMAINS_002 = os.path.join('output', 'domains-002')
 DIR_OUTPUT_DOMAINS_NEW = os.path.join('output', 'domains-new')
 DIR_OUTPUT_DOMAINS_RESULTS = os.path.join('output', 'results')
 
+DIR_PUBLIC = os.path.join('public')
 DUPLICATE_MIN_COUNT = 3
