@@ -36,14 +36,6 @@ def run_task(enable_delay=False):
         print("等待5秒以释放内存...")
         time.sleep(5)
 
-    print("【6】 ******** merge2all() ********")
-    from scripts.merge2all import merge2all
-    merge2all(batch_size=2048)
-    
-    if enable_delay:
-        print("等待5秒以释放内存...")
-        time.sleep(5)
-
     print("【7】 ******** save_domains_to_db() ********")
     from scripts.store_domains_db import save_domains_to_db
     # 使用较小的批处理大小以减少内存使用
