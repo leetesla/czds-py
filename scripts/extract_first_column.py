@@ -37,6 +37,8 @@ def extract_first_column_from_file(input_file, output_file):
     total_lines = 0
     processed_lines = 0
     duplicate_count = 0
+    numeric_start_count = 0  # 以数字开头的域名数量
+    dash_start_count = 0     # 以连字符开头的域名数量
     
     # 使用集合来跟踪已经见过的域名，避免重复
     seen_domains = set()
@@ -67,6 +69,13 @@ def extract_first_column_from_file(input_file, output_file):
                         seen_domains.add(first_column)
                         outfile.write(first_column + '\n')
                         processed_lines += 1
+                        
+                        # 检查是否以数字开头
+                        if first_column and first_column[0].isdigit():
+                            numeric_start_count += 1
+                        # 检查是否以连字符开头
+                        elif first_column and first_column[0] == '-':
+                            dash_start_count += 1
                     elif first_column in seen_domains:
                         duplicate_count += 1
         
@@ -74,6 +83,8 @@ def extract_first_column_from_file(input_file, output_file):
         print(f"  总行数: {total_lines}")
         print(f"  处理行数: {processed_lines}")
         print(f"  重复域名数: {duplicate_count}")
+        print(f"  以数字开头的域名数: {numeric_start_count}")
+        print(f"  以连字符开头的域名数: {dash_start_count}")
         return True
         
     except Exception as e:
@@ -109,6 +120,10 @@ def extract_first_column_from_directory(input_dir, output_dir):
     # 全局集合来跟踪所有已经见过的域名，避免跨文件重复
     seen_domains = set()
     
+    # 全局统计信息
+    total_numeric_start = 0
+    total_dash_start = 0
+    
     # 处理每个文件
     processed_files = 0
     for txt_file in txt_files:
@@ -118,11 +133,17 @@ def extract_first_column_from_directory(input_dir, output_dir):
         output_file = os.path.join(output_dir, filename)
         
         # 处理文件
-        if extract_first_column_from_file_global_dedup(txt_file, output_file, seen_domains):
+        result = extract_first_column_from_file_global_dedup(txt_file, output_file, seen_domains)
+        if result:
             processed_files += 1
+            # 更新全局统计信息
+            total_numeric_start += result.get('numeric_start_count', 0)
+            total_dash_start += result.get('dash_start_count', 0)
     
     print(f"\n处理完成! 成功处理 {processed_files}/{len(txt_files)} 个文件")
     print(f"输出目录: {output_dir}")
+    print(f"总共以数字开头的域名数: {total_numeric_start}")
+    print(f"总共以连字符开头的域名数: {total_dash_start}")
     
     return True
 
@@ -135,6 +156,9 @@ def extract_first_column_from_file_global_dedup(input_file, output_file, seen_do
         input_file (str): 输入文件路径
         output_file (str): 输出文件路径
         seen_domains (set): 全局已见域名集合
+        
+    Returns:
+        dict: 包含处理统计信息的字典
     """
     # 确保输出目录存在
     output_dir = os.path.dirname(output_file)
@@ -145,6 +169,8 @@ def extract_first_column_from_file_global_dedup(input_file, output_file, seen_do
     total_lines = 0
     processed_lines = 0
     duplicate_count = 0
+    numeric_start_count = 0  # 以数字开头的域名数量
+    dash_start_count = 0     # 以连字符开头的域名数量
     
     try:
         with open(input_file, 'r', encoding='utf-8') as infile, \
@@ -172,6 +198,13 @@ def extract_first_column_from_file_global_dedup(input_file, output_file, seen_do
                         seen_domains.add(first_column)
                         outfile.write(first_column + '\n')
                         processed_lines += 1
+                        
+                        # 检查是否以数字开头
+                        if first_column and first_column[0].isdigit():
+                            numeric_start_count += 1
+                        # 检查是否以连字符开头
+                        elif first_column and first_column[0] == '-':
+                            dash_start_count += 1
                     elif first_column in seen_domains:
                         duplicate_count += 1
         
@@ -179,11 +212,18 @@ def extract_first_column_from_file_global_dedup(input_file, output_file, seen_do
         print(f"  总行数: {total_lines}")
         print(f"  处理行数: {processed_lines}")
         print(f"  重复域名数: {duplicate_count}")
-        return True
+        print(f"  以数字开头的域名数: {numeric_start_count}")
+        print(f"  以连字符开头的域名数: {dash_start_count}")
+        return {
+            'processed_lines': processed_lines,
+            'duplicate_count': duplicate_count,
+            'numeric_start_count': numeric_start_count,
+            'dash_start_count': dash_start_count
+        }
         
     except Exception as e:
         print(f"处理文件 {input_file} 时出错: {e}")
-        return False
+        return None
 
 
 def main():

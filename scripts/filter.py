@@ -9,7 +9,10 @@ def normalize_domain(domain):
 
 def filter_domain(domain):
     """
-    过滤域名：排除点号数量超过2个的域名，以及含有双连字符的域名，以及含有数字超过2个的域名
+    过滤域名：排除点号数量超过2个的域名，
+            以及含有双连字符的域名，
+            以及含有数字超过2个的域名,
+            以数字或-开头的域名
 
     Args:
         domain (str): 域名
@@ -19,6 +22,10 @@ def filter_domain(domain):
     """
     domain = normalize_domain(domain)
     if not domain:
+        return False
+
+    # 检查是否以数字或连字符开头
+    if domain[0].isdigit() or domain[0] == '-':
         return False
 
     # 计算点号数量
@@ -36,5 +43,5 @@ def filter_domain(domain):
     if digit_count > 1:
         return False
 
-    
+
     return True
