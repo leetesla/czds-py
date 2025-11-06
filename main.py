@@ -32,4 +32,4 @@ if __name__ == "__main__":
     save_domains_to_db()
 
     print("【8】 ******* find_duplicate() ********")
-    find_duplicate()
+    find_duplicate(1)
