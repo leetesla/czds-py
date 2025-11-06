@@ -27,7 +27,7 @@ from app_config.constant import FILE_OUTPUT_DOMAINS_DIFF_ALL, FILE_OUTPUT_DOMAIN
     HTML_OUTPUT_DOMAINS_DUPLICATE, DUPLICATE_MIN_COUNT
 
 
-def normalize_domain(domain):
+def get_domain_keyword(domain):
     """
     标准化域名，移除常见顶级域名后缀并移除所有"-"
     
@@ -138,7 +138,7 @@ def find_duplicate_domains(input_file, output_file, html_output_file=None):
                 total_domains += 1
                 
                 # 标准化域名（移除.org.后缀并移除"-"）
-                normalized = normalize_domain(domain)
+                normalized = get_domain_keyword(domain)
                 
                 # 将原始域名添加到对应的标准域名列表中
                 domain_map[normalized].append(domain)
