@@ -1,18 +1,23 @@
 import os
 
 from app_config.constant import DIR_OUTPUT_DOMAINS_NEW
-from util import FILE_OUTPUT_DOMAINS_NEW_ALL
+from util import FILE_OUTPUT_DOMAINS_NEW_ALL, DIR_OUTPUT_DOMAINS_NEW_TODAY
 
 
 def merge2all():
     # 将download/diff文件夹下所有.txt文件合并 输出到 output/all.txt中
-    input_dir = DIR_OUTPUT_DOMAINS_NEW
+    input_dir = DIR_OUTPUT_DOMAINS_NEW_TODAY
     output_file = FILE_OUTPUT_DOMAINS_NEW_ALL
 
     # 检查输入目录是否存在
     if not os.path.exists(input_dir):
         print(f"目录 {input_dir} 不存在")
         return
+
+    # 确保输出目录存在
+    output_dir = os.path.dirname(output_file)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
     
     # 获取所有.txt文件并按名称排序
     txt_files = sorted([f for f in os.listdir(input_dir) if f.endswith('.txt')])
@@ -20,6 +25,7 @@ def merge2all():
     # 如果没有.txt文件，给出提示并创建空文件
     if not txt_files:
         print(f"目录 {input_dir} 中没有找到.txt文件")
+
         # 创建一个空的输出文件（会清空已存在的文件）
         with open(output_file, 'w', encoding='utf-8') as outfile:
             pass

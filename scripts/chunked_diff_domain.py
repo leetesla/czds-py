@@ -13,6 +13,7 @@ import shutil
 from app_config.config import load_config, get_tlds_from_config
 from app_config.constant import DIR_OUTPUT_DOMAINS_001, DIR_OUTPUT_DOMAINS_002, DIR_OUTPUT_DOMAINS_NEW
 from scripts.filter import filter_domain, normalize_domain
+from util import DIR_OUTPUT_DOMAINS_NEW_TODAY
 
 
 def hash_domain(domain, num_chunks=100):
@@ -126,12 +127,16 @@ def diff_domains():
     
     OLD_DIR = DIR_OUTPUT_DOMAINS_001
     NEW_DIR = DIR_OUTPUT_DOMAINS_002
-    DIFF_DIR = DIR_OUTPUT_DOMAINS_NEW
+    DIFF_DIR_TODAY = DIR_OUTPUT_DOMAINS_NEW_TODAY
+
+    if not os.path.exists(DIFF_DIR_TODAY):
+        print(f"目录 {DIFF_DIR_TODAY} 不存在, 新建中...")
+        os.makedirs(DIFF_DIR_TODAY, exist_ok=True)
     
     for tld in tlds:
         old_file = f"{OLD_DIR}/{tld}.txt"
         new_file = f"{NEW_DIR}/{tld}.txt"
-        output_file = f"{DIFF_DIR}/{tld}.txt"
+        output_file = f"{DIFF_DIR_TODAY}/{tld}.txt"
         
         print(f"正在处理 {tld} 域名...")
         find_new_domains_chunked(old_file, new_file, output_file)
