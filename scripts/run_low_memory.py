@@ -15,8 +15,6 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 
 from app_config.constant import DIR_DOWNLOAD_ZONEFILES, DIR_OUTPUT_DOMAINS_002
-from scripts.extract_first_column import extract_first_column_from_directory
-from scripts.store_domains_db import save_domains_to_db
 from util.util import FILE_OUTPUT_DOMAINS_NEW_ALL
 
 
@@ -27,7 +25,10 @@ def run_task_low_memory():
     """
     print("【1】******* 提取第一列域名 ********")
     try:
-        extract_first_column_from_directory(DIR_DOWNLOAD_ZONEFILES, DIR_OUTPUT_DOMAINS_002)
+        # 动态导入以减少初始内存占用
+        from scripts.extract_first_column import extract_first_column_from_directory
+        # 使用较小的批处理大小以减少内存使用
+        extract_first_column_from_directory(DIR_DOWNLOAD_ZONEFILES, DIR_OUTPUT_DOMAINS_002, batch_size=2000)
         print("第一列域名提取完成")
     except Exception as e:
         print(f"提取第一列域名时出错: {e}")
@@ -55,7 +56,7 @@ def run_task_low_memory():
     try:
         # 动态导入以减少初始内存占用
         from scripts.merge2all import merge2all
-        merge2all()
+        merge2all(batch_size=2048)
         print("域名合并完成")
     except Exception as e:
         print(f"合并域名时出错: {e}")
@@ -67,7 +68,9 @@ def run_task_low_memory():
     
     print("【4】******* 保存域名到数据库 ********")
     try:
-        save_domains_to_db()
+        from scripts.store_domains_db import save_domains_to_db
+        # 使用较小的批处理大小以减少内存使用
+        save_domains_to_db(FILE_OUTPUT_DOMAINS_NEW_ALL, batch_size=200)
         print("域名保存到数据库完成")
     except Exception as e:
         print(f"保存域名到数据库时出错: {e}")

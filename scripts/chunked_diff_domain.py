@@ -25,7 +25,7 @@ def hash_domain(domain, num_chunks=100):
     return hash_val % num_chunks
 
 
-def split_file_to_chunks(input_file, output_dir, num_chunks=100):
+def split_file_to_chunks(input_file, output_dir, num_chunks=100, batch_size=1000):
     """将文件按域名哈希值分割成多个块"""
     os.makedirs(output_dir, exist_ok=True)
     
@@ -36,20 +36,36 @@ def split_file_to_chunks(input_file, output_dir, num_chunks=100):
     
     # 读取输入文件并分块写入
     with open(input_file, "r", encoding="utf-8") as fp:
+        batch_lines = []
         for line in fp:
-            domain = normalize_domain(line)
-            if not domain:
-                continue
+            batch_lines.append(line)
             
-            chunk_id = hash_domain(domain, num_chunks)
-            chunk_files[chunk_id].write(domain + "\n")
+            # 当批次达到指定大小时，处理这一批数据
+            if len(batch_lines) >= batch_size:
+                _process_batch_lines(batch_lines, chunk_files, num_chunks)
+                batch_lines = []  # 清空批次
+        
+        # 处理剩余的数据
+        if batch_lines:
+            _process_batch_lines(batch_lines, chunk_files, num_chunks)
     
     # 关闭所有文件
     for f in chunk_files.values():
         f.close()
 
 
-def find_new_domains_chunked(old_file, new_file, output_file, num_chunks=100):
+def _process_batch_lines(lines, chunk_files, num_chunks):
+    """处理一批行数据并写入对应的块文件"""
+    for line in lines:
+        domain = normalize_domain(line)
+        if not domain:
+            continue
+        
+        chunk_id = hash_domain(domain, num_chunks)
+        chunk_files[chunk_id].write(domain + "\n")
+
+
+def find_new_domains_chunked(old_file, new_file, output_file, num_chunks=100, batch_size=1000):
     """
     使用分块方式比较两个域名文件，找出新增的域名
     
@@ -58,6 +74,7 @@ def find_new_domains_chunked(old_file, new_file, output_file, num_chunks=100):
         new_file (str): 新域名文件路径
         output_file (str): 输出文件路径
         num_chunks (int): 分块数量
+        batch_size (int): 批处理大小
     """
     if not os.path.exists(old_file):
         print(f"错误: 找不到初始域名文件 {old_file}")
@@ -76,10 +93,10 @@ def find_new_domains_chunked(old_file, new_file, output_file, num_chunks=100):
     
     try:
         print(f"正在分割旧域名文件{old_file}...")
-        split_file_to_chunks(old_file, old_chunks_dir, num_chunks)
+        split_file_to_chunks(old_file, old_chunks_dir, num_chunks, batch_size)
         
         print(f"正在分割新域名文件{new_file}...")
-        split_file_to_chunks(new_file, new_chunks_dir, num_chunks)
+        split_file_to_chunks(new_file, new_chunks_dir, num_chunks, batch_size)
         
         print("正在逐块比较域名...")
         with open(output_file, "w", encoding="utf-8") as out_fp:
@@ -92,27 +109,39 @@ def find_new_domains_chunked(old_file, new_file, output_file, num_chunks=100):
                 if not os.path.exists(new_chunk_file):
                     continue
                 
-                # 加载旧块到内存
+                # 分批加载旧块到内存
                 old_domains = set()
                 if os.path.exists(old_chunk_file):
                     with open(old_chunk_file, "r", encoding="utf-8") as old_fp:
+                        batch_lines = []
                         for line in old_fp:
-                            domain = line.strip()
+                            batch_lines.append(line.strip())
+                            
+                            # 当批次达到指定大小时，处理这一批数据
+                            if len(batch_lines) >= batch_size:
+                                for domain in batch_lines:
+                                    if domain:
+                                        old_domains.add(domain)
+                                batch_lines = []  # 清空批次
+                        
+                        # 处理剩余的数据
+                        for domain in batch_lines:
                             if domain:
                                 old_domains.add(domain)
                 
-                # 处理新块，找出新增域名
+                # 分批处理新块，找出新增域名
                 with open(new_chunk_file, "r", encoding="utf-8") as new_fp:
+                    batch_lines = []
                     for line in new_fp:
-                        domain = line.strip()
-                        if not domain:
-                            continue
+                        batch_lines.append(line.strip())
                         
-                        # 如果域名不在旧块中，则为新增
-                        if domain not in old_domains:
-                            # 应用过滤规则
-                            if filter_domain(domain):
-                                out_fp.write(domain + "\n")
+                        # 当批次达到指定大小时，处理这一批数据
+                        if len(batch_lines) >= batch_size:
+                            _process_new_chunk_batch(batch_lines, old_domains, out_fp)
+                            batch_lines = []  # 清空批次
+                    
+                    # 处理剩余的数据
+                    _process_new_chunk_batch(batch_lines, old_domains, out_fp)
         
         print(f"新增域名已保存到: {output_file}")
         return True
@@ -123,6 +152,19 @@ def find_new_domains_chunked(old_file, new_file, output_file, num_chunks=100):
     finally:
         # 清理临时目录
         shutil.rmtree(temp_dir, ignore_errors=True)
+
+
+def _process_new_chunk_batch(lines, old_domains, out_fp):
+    """处理新块的一批数据，找出新增域名"""
+    for domain in lines:
+        if not domain:
+            continue
+        
+        # 如果域名不在旧块中，则为新增
+        if domain not in old_domains:
+            # 应用过滤规则
+            if filter_domain(domain):
+                out_fp.write(domain + "\n")
 
 
 def diff_domains():
@@ -142,7 +184,7 @@ def diff_domains():
         output_file = f"{DIFF_DIR_TODAY}/{tld}.txt"
         
         print(f"正在处理 {tld} 域名...")
-        find_new_domains_chunked(old_file, new_file, output_file)
+        find_new_domains_chunked(old_file, new_file, output_file, num_chunks=50, batch_size=500)
 
 
 if __name__ == '__main__':

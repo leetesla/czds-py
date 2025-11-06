@@ -48,12 +48,13 @@ def init_database():
     conn.close()
 
 
-def store_domains_to_db(domains_file):
+def store_domains_to_db(domains_file, batch_size=1000):
     """
     将域名存储到数据库
     
     Args:
         domains_file (str): 包含域名的文件路径
+        batch_size (int): 批处理大小，控制内存使用
     """
     if not os.path.exists(domains_file):
         print(f"文件 {domains_file} 不存在")
@@ -77,11 +78,10 @@ def store_domains_to_db(domains_file):
     # 读取域名文件并插入数据库（分批处理以节省内存）
     inserted_count = 0
     duplicate_count = 0
-    batch_size = 1000  # 批处理大小
     batch = []
     
     with open(domains_file, 'r', encoding='utf-8') as f:
-        for line in f:
+        for line_num, line in enumerate(f, 1):
             domain = line.strip()
             if domain:  # 忽略空行
                 batch.append((domain, today))
@@ -98,8 +98,12 @@ def store_domains_to_db(domains_file):
                         duplicate_count += len(batch) - cursor.rowcount
                         batch = []  # 清空批次
                         conn.commit()  # 提交事务释放内存
+                        
+                        # 每处理一定数量的行后打印进度
+                        if line_num % (batch_size * 10) == 0:
+                            print(f"已处理 {line_num} 行...")
                     except sqlite3.Error as e:
-                        print(f"数据库插入错误: {e}")
+                        print(f"数据库插入错误 (行 {line_num}): {e}")
                         batch = []  # 清空批次
     
     # 处理剩余的记录
@@ -111,10 +115,10 @@ def store_domains_to_db(domains_file):
             )
             inserted_count += cursor.rowcount
             duplicate_count += len(batch) - cursor.rowcount
+            conn.commit()  # 提交事务
         except sqlite3.Error as e:
             print(f"数据库插入错误: {e}")
     
-    conn.commit()
     conn.close()
     
     print(f"成功插入 {inserted_count} 条记录到数据库")
@@ -177,12 +181,12 @@ def get_domains_count_by_date():
     return results
 
 
-def save_domains_to_db(domains_file=FILE_OUTPUT_DOMAINS_NEW_ALL):
+def save_domains_to_db(domains_file=FILE_OUTPUT_DOMAINS_NEW_ALL, batch_size=1000):
     """主函数"""
     print("开始将域名数据存储到数据库...")
     
     # 存储域名到数据库
-    store_domains_to_db(domains_file)
+    store_domains_to_db(domains_file, batch_size)
     
     # 删除7天前的数据
     print("开始清理7天前的数据...")

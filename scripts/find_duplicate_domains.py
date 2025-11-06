@@ -108,20 +108,21 @@ def generate_html_output(duplicates, html_output_file):
     except Exception as e:
         print(f"生成HTML文件时出错: {e}")
 
-def get_domains_from_db(days=7):
+def get_domains_from_db_chunked(days=7, batch_size=1000):
     """
-    从数据库获取最近几天的域名数据
+    从数据库分批获取最近几天的域名数据，以降低内存使用
     
     Args:
         days (int): 最近几天的数据，默认7天
+        batch_size (int): 批处理大小
         
-    Returns:
-        list: 域名列表
+    Yields:
+        list: 域名列表批次
     """
     # 检查数据库文件是否存在
     if not os.path.exists(DB_FILE):
         print(f"错误: 数据库文件 {DB_FILE} 不存在")
-        return []
+        return
     
     # 计算截止日期
     cutoff_date = datetime.now().date() - timedelta(days=days)
@@ -130,52 +131,70 @@ def get_domains_from_db(days=7):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     
-    # 查询最近几天的域名数据
+    # 查询最近几天的域名数据（分批获取）
     cursor.execute(
         'SELECT domain FROM domains WHERE created_date >= ?',
         (cutoff_date,)
     )
     
-    domains = [row[0] for row in cursor.fetchall()]
+    batch = []
+    total_count = 0
+    while True:
+        rows = cursor.fetchmany(batch_size)
+        if not rows:
+            break
+            
+        batch.extend([row[0] for row in rows])
+        total_count += len(rows)
+        
+        # 当批次达到指定大小时，返回这一批数据
+        if len(batch) >= batch_size:
+            yield batch
+            batch = []
+    
+    # 返回剩余的数据
+    if batch:
+        yield batch
     
     conn.close()
     
-    print(f"从数据库读取了 {len(domains)} 个域名（最近 {days} 天）")
-    return domains
+    print(f"从数据库读取了 {total_count} 个域名（最近 {days} 天）")
 
-def find_duplicate_domains_from_db(output_file, html_output_file=None, days=7):
+def find_duplicate_domains_from_db_chunked(output_file, html_output_file=None, days=7, batch_size=1000):
     """
-    从数据库读取域名，找出出现多次的域名（比较时忽略"-"）
+    从数据库分批读取域名，找出出现多次的域名（比较时忽略"-"）
     
     Args:
         output_file (str): 输出文件路径
         html_output_file (str): HTML输出文件路径（可选）
         days (int): 读取最近几天的数据，默认7天
+        batch_size (int): 批处理大小
     """
-    # 从数据库获取域名数据
-    domains = get_domains_from_db(days)
-    
-    if not domains:
-        print("没有从数据库读取到任何域名数据")
-        return False
-    
     # 存储标准化域名及其原始形式
     domain_map = defaultdict(list)
     
     # 统计信息
-    total_domains = len(domains)
+    total_domains = 0
     
-    # 处理每个域名
-    for domain in domains:
-        # 跳过空行
-        if not domain:
-            continue
+    # 分批处理域名数据
+    for batch in get_domains_from_db_chunked(days, batch_size):
+        total_domains += len(batch)
         
-        # 标准化域名（移除.org.后缀并移除"-"）
-        normalized = get_domain_keyword(domain)
+        # 处理每个域名
+        for domain in batch:
+            # 跳过空行
+            if not domain:
+                continue
+            
+            # 标准化域名（移除.org.后缀并移除"-"）
+            normalized = get_domain_keyword(domain)
+            
+            # 将原始域名添加到对应的标准域名列表中
+            domain_map[normalized].append(domain)
         
-        # 将原始域名添加到对应的标准域名列表中
-        domain_map[normalized].append(domain)
+        # 定期清理以避免内存过大
+        if len(domain_map) > 100000:
+            print(f"已处理 {total_domains} 个域名，domain_map 大小: {len(domain_map)}")
     
     # 找出出现多次的域名
     duplicates = {norm: originals for norm, originals in domain_map.items() if len(originals) >= DUPLICATE_MIN_COUNT}
@@ -244,8 +263,8 @@ def find_duplicate(default_days=7):
         print(f"  读取最近天数: {days} 天")
         print()
     
-    # 执行查找重复域名
-    find_duplicate_domains_from_db(output_file, html_output_file, days)
+    # 执行查找重复域名（使用分批处理）
+    find_duplicate_domains_from_db_chunked(output_file, html_output_file, days, batch_size=500)
     date_str = get_date_string()
 
 if __name__ == '__main__':

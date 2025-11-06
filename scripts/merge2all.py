@@ -4,7 +4,13 @@ from app_config.constant import DIR_OUTPUT_DOMAINS_NEW
 from util.util import DIR_OUTPUT_DOMAINS_NEW_TODAY, FILE_OUTPUT_DOMAINS_NEW_ALL
 
 
-def merge2all():
+def merge2all(batch_size=8192):
+    """
+    将download/diff文件夹下所有.txt文件合并 输出到 output/all.txt中
+    
+    Args:
+        batch_size (int): 读取文件的缓冲区大小
+    """
     # 将download/diff文件夹下所有.txt文件合并 输出到 output/all.txt中
     input_dir = DIR_OUTPUT_DOMAINS_NEW_TODAY
     output_file = FILE_OUTPUT_DOMAINS_NEW_ALL
@@ -33,13 +39,13 @@ def merge2all():
     
     # 合并文件（使用'w'模式会自动清空已存在的文件）
     # 使用缓冲写入方式减少内存使用
-    with open(output_file, 'w', encoding='utf-8', buffering=8192) as outfile:
+    with open(output_file, 'w', encoding='utf-8', buffering=batch_size) as outfile:
         for i, txt_file in enumerate(txt_files):
             file_path = os.path.join(input_dir, txt_file)
             # 分块读取文件内容，避免一次性加载整个文件到内存
             with open(file_path, 'r', encoding='utf-8') as infile:
                 while True:
-                    chunk = infile.read(8192)  # 每次读取8KB
+                    chunk = infile.read(batch_size)  # 每次读取指定大小
                     if not chunk:
                         break
                     outfile.write(chunk)
@@ -48,3 +54,7 @@ def merge2all():
                     outfile.write('\n')
     
     print(f"成功合并 {len(txt_files)} 个文件到 {output_file}")
+
+
+# 保持向后兼容性
+merge2all_chunked = merge2all
