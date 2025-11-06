@@ -23,8 +23,9 @@ import os
 import sys
 from collections import defaultdict
 
-from app_config.constant import FILE_OUTPUT_DOMAINS_NEW_ALL, FILE_OUTPUT_DOMAINS_DUPLICATE, \
-    HTML_OUTPUT_DOMAINS_DUPLICATE, DUPLICATE_MIN_COUNT
+from app_config.constant import DUPLICATE_MIN_COUNT
+from util import FILE_OUTPUT_DOMAINS_NEW_ALL, FILE_OUTPUT_DOMAINS_DUPLICATE, \
+    HTML_OUTPUT_DOMAINS_DUPLICATE
 
 
 def get_domain_keyword(domain):
