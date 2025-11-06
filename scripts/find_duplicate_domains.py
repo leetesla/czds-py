@@ -23,7 +23,7 @@ import os
 import sys
 from collections import defaultdict
 
-from app_config.constant import FILE_OUTPUT_DOMAINS_DIFF_ALL, FILE_OUTPUT_DOMAINS_DUPLICATE, \
+from app_config.constant import FILE_OUTPUT_DOMAINS_NEW_ALL, FILE_OUTPUT_DOMAINS_DUPLICATE, \
     HTML_OUTPUT_DOMAINS_DUPLICATE, DUPLICATE_MIN_COUNT
 
 
@@ -183,7 +183,7 @@ def find_duplicate_domains(input_file, output_file, html_output_file=None):
 
 def find_duplicate():
     # 默认文件路径
-    default_input = FILE_OUTPUT_DOMAINS_DIFF_ALL
+    default_input = FILE_OUTPUT_DOMAINS_NEW_ALL
     default_output = FILE_OUTPUT_DOMAINS_DUPLICATE
     default_html_output = HTML_OUTPUT_DOMAINS_DUPLICATE
     

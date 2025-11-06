@@ -11,7 +11,7 @@ import hashlib
 import tempfile
 import shutil
 from app_config.config import load_config, get_tlds_from_config
-from app_config.constant import DIR_OUTPUT_DOMAINS_001, DIR_OUTPUT_DOMAINS_002, DIR_OUTPUT_DOMAINS_DIFF
+from app_config.constant import DIR_OUTPUT_DOMAINS_001, DIR_OUTPUT_DOMAINS_002, DIR_OUTPUT_DOMAINS_NEW
 from scripts.filter import filter_domain, normalize_domain
 
 
@@ -126,7 +126,7 @@ def diff_domains():
     
     OLD_DIR = DIR_OUTPUT_DOMAINS_001
     NEW_DIR = DIR_OUTPUT_DOMAINS_002
-    DIFF_DIR = DIR_OUTPUT_DOMAINS_DIFF
+    DIFF_DIR = DIR_OUTPUT_DOMAINS_NEW
     
     for tld in tlds:
         old_file = f"{OLD_DIR}/{tld}.txt"
