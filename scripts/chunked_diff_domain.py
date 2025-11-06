@@ -13,6 +13,9 @@ import shutil
 from app_config.config import load_config, get_tlds_from_config
 from app_config.constant import DIR_OUTPUT_DOMAINS_001, DIR_OUTPUT_DOMAINS_002, DIR_OUTPUT_DOMAINS_NEW
 from scripts.filter import filter_domain, normalize_domain
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from util import DIR_OUTPUT_DOMAINS_NEW_TODAY
 
 
