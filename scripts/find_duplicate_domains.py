@@ -49,7 +49,7 @@ def normalize_domain(domain):
     # 移除所有的 "-"
     normalized = domain.replace('-', '')
 
-    print(f"--- normalized: {normalized} ---")
+    # print(f"--- normalized: {normalized} ---")
     
     return normalized
 
