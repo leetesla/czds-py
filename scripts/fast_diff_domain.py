@@ -19,29 +19,7 @@ import time
 
 from app_config.config import load_config
 from app_config.constant import DIR_OUTPUT_DOMAINS_001, DIR_OUTPUT_DOMAINS_002, DIR_OUTPUT_DOMAINS_DIFF
-
-
-def filter_domain(domain):
-    """
-    过滤域名：排除点号数量超过2个的域名，以及含有双连字符的域名，以及含有数字超过2个的域名
-    
-    Args:
-        domain (str): 域名
-        
-    Returns:
-        bool: True表示保留该域名，False表示过滤掉
-    """
-    # 计算点号数量
-    dot_count = domain.count('.')
-    
-    # 检查是否含有双连字符
-    has_double_dash = '--' in domain
-    
-    # 计算数字数量
-    digit_count = sum(1 for char in domain if char.isdigit())
-    
-    # 保留点号数量不超过2个且不含有双连字符且数字数量不超过2个的域名
-    return dot_count < 2 and not has_double_dash and digit_count <= 2
+from scripts.filter import filter_domain, normalize_domain
 
 
 def find_new_domains(old_file, new_file, output_file):
@@ -76,7 +54,7 @@ def find_new_domains(old_file, new_file, output_file):
     old_line_count = 0
     with open(old_file, "r", encoding="utf-8") as old_fp:
         for line in old_fp:
-            domain = line.strip()
+            domain = normalize_domain(line)
             if not domain:
                 continue
             old_line_count += 1
@@ -98,7 +76,7 @@ def find_new_domains(old_file, new_file, output_file):
             tmp_output, "w", encoding="utf-8"
         ) as tmp_fp:
             for line in new_fp:
-                domain = line.strip()
+                domain = normalize_domain(line)
                 if not domain:
                     continue
 

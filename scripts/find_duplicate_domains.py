@@ -24,7 +24,7 @@ import sys
 from collections import defaultdict
 
 from app_config.constant import FILE_OUTPUT_DOMAINS_DIFF_ALL, FILE_OUTPUT_DOMAINS_DUPLICATE, \
-    HTML_OUTPUT_DOMAINS_DUPLICATE
+    HTML_OUTPUT_DOMAINS_DUPLICATE, DUPLICATE_MIN_COUNT
 
 
 def normalize_domain(domain):
@@ -38,7 +38,7 @@ def normalize_domain(domain):
         str: 标准化后的域名
     """
     # 移除常见的顶级域名后缀
-    common_suffixes = ['.org.', '.com.', '.net.', '.edu.', '.gov.', '.mil.', '.int.', '.online.']
+    common_suffixes = ['.org', '.com', '.net', '.edu', '.gov', '.mil', '.int', '.online']
     for suffix in common_suffixes:
         if domain.endswith(suffix):
             domain = domain[:-len(suffix)]  # 移除后缀
@@ -46,6 +46,8 @@ def normalize_domain(domain):
     
     # 移除所有的 "-"
     normalized = domain.replace('-', '')
+
+    print(f"--- normalized: {normalized} ---")
     
     return normalized
 
@@ -82,7 +84,7 @@ def generate_html_output(duplicates, html_output_file):
             
             for normalized, originals in sorted(duplicates.items()):
                 outfile.write('    <div class="domain-group">\n')
-                outfile.write(f'        <div class="normalized-domain">标准化域名: {normalized}</div>\n')
+                outfile.write(f'        <div class="normalized-domain">域名关键词: {normalized}</div>\n')
                 outfile.write('        <div class="original-domains">原始域名: \n')
                 
                 for original in originals:
@@ -140,7 +142,7 @@ def find_duplicate_domains(input_file, output_file, html_output_file=None):
                 domain_map[normalized].append(domain)
         
         # 找出出现多次的域名
-        duplicates = {norm: originals for norm, originals in domain_map.items() if len(originals) > 1}
+        duplicates = {norm: originals for norm, originals in domain_map.items() if len(originals) >= DUPLICATE_MIN_COUNT}
         
         # 写入输出文件
         with open(output_file, 'w', encoding='utf-8') as outfile:

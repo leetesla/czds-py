@@ -16,6 +16,9 @@ import os
 import sys
 import glob
 
+from app_config.constant import DIR_DOWNLOAD_001, DIR_OUTPUT_DOMAINS_001
+from scripts.filter import normalize_domain, filter_domain
+
 
 def extract_first_column_from_file(input_file, output_file):
     """
@@ -53,8 +56,10 @@ def extract_first_column_from_file(input_file, output_file):
                 columns = line.split()
                 if columns:
                     first_column = columns[0]
-                    outfile.write(first_column + '\n')
-                    processed_lines += 1
+                    first_column = normalize_domain(first_column)
+                    if filter_domain(first_column):
+                        outfile.write(first_column + '\n')
+                        processed_lines += 1
         
         print(f"已处理文件: {input_file}")
         print(f"  总行数: {total_lines}")
@@ -111,8 +116,8 @@ def extract_first_column_from_directory(input_dir, output_dir):
 
 def main():
     # 默认目录路径
-    default_input_dir = os.path.join('download', '001')
-    default_output_dir = os.path.join('output', 'domains-001')
+    default_input_dir = DIR_DOWNLOAD_001
+    default_output_dir = DIR_OUTPUT_DOMAINS_001
     
     # 获取命令行参数
     if len(sys.argv) >= 3:
