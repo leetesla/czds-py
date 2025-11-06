@@ -160,6 +160,7 @@ def extract_first_column_from_file_global_dedup(input_file, output_file, seen_do
     Returns:
         dict: 包含处理统计信息的字典
     """
+    seen_domains = set() #不同文件不会重复，因为域名后缀不一样
     # 确保输出目录存在
     output_dir = os.path.dirname(output_file)
     if output_dir:
