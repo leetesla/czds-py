@@ -23,11 +23,18 @@ def filter_domain(domain):
 
     # 计算点号数量
     dot_count = domain.count('.')
+    if dot_count > 1:
+        return False
 
     # 检查是否含有双连字符
     has_double_dash = '--' in domain
+    if has_double_dash:
+        return False
 
     # 计算数字数量
     digit_count = sum(1 for char in domain if char.isdigit())
-    # 保留点号数量不超过2个且不含有双连字符且数字数量<2个的域名
-    return dot_count == 1 and not has_double_dash and digit_count <= 1
+    if digit_count > 1:
+        return False
+
+    
+    return True

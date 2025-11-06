@@ -22,7 +22,7 @@ from scripts.filter import normalize_domain, filter_domain
 
 def extract_first_column_from_file(input_file, output_file):
     """
-    提取单个文件中每行的第一列作为域名
+    提取单个文件中每行的第一列作为域名，并避免重复
     
     Args:
         input_file (str): 输入文件路径
@@ -36,6 +36,10 @@ def extract_first_column_from_file(input_file, output_file):
     # 统计信息
     total_lines = 0
     processed_lines = 0
+    duplicate_count = 0
+    
+    # 使用集合来跟踪已经见过的域名，避免重复
+    seen_domains = set()
     
     try:
         with open(input_file, 'r', encoding='utf-8') as infile, \
@@ -57,13 +61,19 @@ def extract_first_column_from_file(input_file, output_file):
                 if columns:
                     first_column = columns[0]
                     first_column = normalize_domain(first_column)
-                    if filter_domain(first_column):
+                    
+                    # 检查域名是否符合过滤条件且未重复
+                    if filter_domain(first_column) and first_column not in seen_domains:
+                        seen_domains.add(first_column)
                         outfile.write(first_column + '\n')
                         processed_lines += 1
+                    elif first_column in seen_domains:
+                        duplicate_count += 1
         
         print(f"已处理文件: {input_file}")
         print(f"  总行数: {total_lines}")
         print(f"  处理行数: {processed_lines}")
+        print(f"  重复域名数: {duplicate_count}")
         return True
         
     except Exception as e:
@@ -73,7 +83,7 @@ def extract_first_column_from_file(input_file, output_file):
 
 def extract_first_column_from_directory(input_dir, output_dir):
     """
-    处理目录下所有.txt文件，只保留每行第一列的域名
+    处理目录下所有.txt文件，只保留每行第一列的域名，并避免重复
     
     Args:
         input_dir (str): 输入目录路径
@@ -96,6 +106,9 @@ def extract_first_column_from_directory(input_dir, output_dir):
     
     print(f"找到 {len(txt_files)} 个.txt文件")
     
+    # 全局集合来跟踪所有已经见过的域名，避免跨文件重复
+    seen_domains = set()
+    
     # 处理每个文件
     processed_files = 0
     for txt_file in txt_files:
@@ -105,13 +118,72 @@ def extract_first_column_from_directory(input_dir, output_dir):
         output_file = os.path.join(output_dir, filename)
         
         # 处理文件
-        if extract_first_column_from_file(txt_file, output_file):
+        if extract_first_column_from_file_global_dedup(txt_file, output_file, seen_domains):
             processed_files += 1
     
     print(f"\n处理完成! 成功处理 {processed_files}/{len(txt_files)} 个文件")
     print(f"输出目录: {output_dir}")
     
     return True
+
+
+def extract_first_column_from_file_global_dedup(input_file, output_file, seen_domains):
+    """
+    提取单个文件中每行的第一列作为域名，并避免全局重复
+    
+    Args:
+        input_file (str): 输入文件路径
+        output_file (str): 输出文件路径
+        seen_domains (set): 全局已见域名集合
+    """
+    # 确保输出目录存在
+    output_dir = os.path.dirname(output_file)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+    
+    # 统计信息
+    total_lines = 0
+    processed_lines = 0
+    duplicate_count = 0
+    
+    try:
+        with open(input_file, 'r', encoding='utf-8') as infile, \
+             open(output_file, 'w', encoding='utf-8') as outfile:
+            
+            for line in infile:
+                # 去除行首行尾空白字符
+                line = line.strip()
+                
+                # 跳过空行
+                if not line:
+                    continue
+                
+                total_lines += 1
+                
+                # 提取第一列（以空格、制表符等分隔符分割）
+                # 假设第一列就是第一个字段
+                columns = line.split()
+                if columns:
+                    first_column = columns[0]
+                    first_column = normalize_domain(first_column)
+                    
+                    # 检查域名是否符合过滤条件且未重复
+                    if filter_domain(first_column) and first_column not in seen_domains:
+                        seen_domains.add(first_column)
+                        outfile.write(first_column + '\n')
+                        processed_lines += 1
+                    elif first_column in seen_domains:
+                        duplicate_count += 1
+        
+        print(f"已处理文件: {input_file}")
+        print(f"  总行数: {total_lines}")
+        print(f"  处理行数: {processed_lines}")
+        print(f"  重复域名数: {duplicate_count}")
+        return True
+        
+    except Exception as e:
+        print(f"处理文件 {input_file} 时出错: {e}")
+        return False
 
 
 def main():
