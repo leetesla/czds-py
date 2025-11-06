@@ -25,6 +25,8 @@ import logging
 from datetime import datetime, timedelta
 import threading
 
+from scripts.run import run_task
+
 # 配置日志
 logging.basicConfig(
     level=logging.INFO,
@@ -38,7 +40,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def sample_daily_task():
+def daily_task():
     """
     示例任务函数 - 每天执行的任务
     您可以在这里添加实际需要执行的代码
@@ -56,8 +58,9 @@ def sample_daily_task():
     # 例如：数据处理、文件操作、API调用等
     print(f"每日任务执行时间: {datetime.now()}")
     
-    # 模拟任务执行
-    time.sleep(2)
+    # 任务执行
+    # time.sleep(2)
+    run_task()
     
     logger.info("每日任务执行完成")
 
@@ -141,7 +144,7 @@ def main():
     可以修改这里的参数来自定义任务执行时间
     """
     # 创建调度器实例 (默认凌晨2点执行)
-    scheduler = DailyTaskScheduler(sample_daily_task, hour=2, minute=0)
+    scheduler = DailyTaskScheduler(daily_task, hour=2, minute=0)
     
     try:
         # 启动调度器
