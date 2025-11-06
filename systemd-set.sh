@@ -1,7 +1,9 @@
 #!/bin/bash
-sudo cp linux.service /etc/systemd/system/czds.service
+SERVICE_NAME="czds.service"
+
+sudo cp linux.service /etc/systemd/system/$SERVICE_NAME
 sudo systemctl daemon-reload
-sudo systemctl enable czds.service
-sudo systemctl start czds.service
-sudo systemctl status czds.service
-sudo journalctl -u czds.service -f
+sudo systemctl enable $SERVICE_NAME
+sudo systemctl start $SERVICE_NAME
+sudo systemctl status $SERVICE_NAME
+sudo journalctl -u $SERVICE_NAME -f
