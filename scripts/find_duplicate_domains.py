@@ -25,7 +25,7 @@ from collections import defaultdict
 
 from app_config.constant import DUPLICATE_MIN_COUNT
 from util import FILE_OUTPUT_DOMAINS_NEW_ALL, FILE_OUTPUT_DOMAINS_DUPLICATE, \
-    HTML_OUTPUT_DOMAINS_DUPLICATE
+    HTML_OUTPUT_DOMAINS_DUPLICATE, DB_FILE
 
 
 def get_domain_keyword(domain):
@@ -106,18 +106,18 @@ def generate_html_output(duplicates, html_output_file):
     except Exception as e:
         print(f"生成HTML文件时出错: {e}")
 
-def find_duplicate_domains(input_file, output_file, html_output_file=None):
+def find_duplicate_domains(db_file, output_file, html_output_file=None):
     """
     读取域名文件，找出出现多次的域名（比较时忽略"-"）
     
     Args:
-        input_file (str): 输入文件路径
+        db_file (str): 输入文件路径
         output_file (str): 输出文件路径
         html_output_file (str): HTML输出文件路径（可选）
     """
     # 检查输入文件是否存在
-    if not os.path.exists(input_file):
-        print(f"错误: 输入文件 {input_file} 不存在")
+    if not os.path.exists(db_file):
+        print(f"错误: 输入文件 {db_file} 不存在")
         return False
     
     # 存储标准化域名及其原始形式
@@ -127,7 +127,7 @@ def find_duplicate_domains(input_file, output_file, html_output_file=None):
     total_domains = 0
     
     try:
-        with open(input_file, 'r', encoding='utf-8') as infile:
+        with open(db_file, 'r', encoding='utf-8') as infile:
             for line in infile:
                 # 去除行首行尾空白字符
                 domain = line.strip()
@@ -184,7 +184,7 @@ def find_duplicate_domains(input_file, output_file, html_output_file=None):
 
 def find_duplicate():
     # 默认文件路径
-    default_input = FILE_OUTPUT_DOMAINS_NEW_ALL
+    default_input = DB_FILE
     default_output = FILE_OUTPUT_DOMAINS_DUPLICATE
     default_html_output = HTML_OUTPUT_DOMAINS_DUPLICATE
     

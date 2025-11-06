@@ -6,7 +6,7 @@ from scripts.extract_first_column import extract_first_column_from_directory
 from scripts.find_duplicate_domains import find_duplicate
 from scripts.merge2all import merge2all
 from scripts.prepare import set_init_domains
-from scripts.store_domains_db import save_domains
+from scripts.store_domains_db import save_domains_to_db
 from scripts.unzip_zone_files import unzip_zone_files
 
 if __name__ == "__main__":
@@ -28,8 +28,8 @@ if __name__ == "__main__":
     print("【6】 ******** merge2all() ********")
     merge2all()
 
-    print("【6】 ******** merge2all() ********")
-    save_domains()
+    print("【7】 ******** save_domains_to_db() ********")
+    save_domains_to_db()
 
-    print("【7】 ******* find_duplicate() ********")
+    print("【8】 ******* find_duplicate() ********")
     find_duplicate()

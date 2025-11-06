@@ -153,7 +153,7 @@ def get_domains_count_by_date():
     return results
 
 
-def save_domains(domains_file=FILE_OUTPUT_DOMAINS_NEW_ALL):
+def save_domains_to_db(domains_file=FILE_OUTPUT_DOMAINS_NEW_ALL):
     """主函数"""
     print("开始将域名数据存储到数据库...")
     
@@ -172,4 +172,4 @@ def save_domains(domains_file=FILE_OUTPUT_DOMAINS_NEW_ALL):
 
 
 if __name__ == '__main__':
-    save_domains()
+    save_domains_to_db()
