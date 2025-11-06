@@ -15,8 +15,8 @@ from app_config.constant import DIR_OUTPUT_DOMAINS_001, DIR_OUTPUT_DOMAINS_002, 
 from scripts.filter import filter_domain, normalize_domain
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from util import DIR_OUTPUT_DOMAINS_NEW_TODAY
+
+from util.util import DIR_OUTPUT_DOMAINS_NEW_TODAY
 
 
 def hash_domain(domain, num_chunks=100):

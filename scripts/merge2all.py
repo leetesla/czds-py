@@ -1,7 +1,7 @@
 import os
 
 from app_config.constant import DIR_OUTPUT_DOMAINS_NEW
-from util import FILE_OUTPUT_DOMAINS_NEW_ALL, DIR_OUTPUT_DOMAINS_NEW_TODAY
+from util.util import DIR_OUTPUT_DOMAINS_NEW_TODAY, FILE_OUTPUT_DOMAINS_NEW_ALL
 
 
 def merge2all():

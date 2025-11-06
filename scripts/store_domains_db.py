@@ -9,8 +9,10 @@ import os
 import sqlite3
 from datetime import datetime, timedelta
 
+from util.util import DB_FILE, FILE_OUTPUT_DOMAINS_NEW_ALL
+
+
 # 从util模块导入数据库文件路径
-from util import FILE_OUTPUT_DOMAINS_NEW_ALL, DB_FILE
 
 
 def init_database():

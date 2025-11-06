@@ -27,8 +27,7 @@ from datetime import datetime, timedelta
 import shutil
 
 from app_config.constant import DUPLICATE_MIN_COUNT, DIR_PUBLIC
-from util import FILE_OUTPUT_DOMAINS_NEW_ALL, FILE_OUTPUT_DOMAINS_DUPLICATE, \
-    HTML_OUTPUT_DOMAINS_DUPLICATE, DB_FILE, get_date_string
+from util.util import get_date_string, DB_FILE, FILE_OUTPUT_DOMAINS_DUPLICATE, HTML_OUTPUT_DOMAINS_DUPLICATE
 
 
 def get_domain_keyword(domain):
