@@ -74,23 +74,45 @@ def store_domains_to_db(domains_file):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     
-    # 读取域名文件并插入数据库
+    # 读取域名文件并插入数据库（分批处理以节省内存）
     inserted_count = 0
     duplicate_count = 0
+    batch_size = 1000  # 批处理大小
+    batch = []
     
     with open(domains_file, 'r', encoding='utf-8') as f:
         for line in f:
             domain = line.strip()
             if domain:  # 忽略空行
-                try:
-                    cursor.execute(
-                        'INSERT INTO domains (domain, created_date) VALUES (?, ?)',
-                        (domain, today)
-                    )
-                    inserted_count += 1
-                except sqlite3.IntegrityError:
-                    # 域名在当天已经存在
-                    duplicate_count += 1
+                batch.append((domain, today))
+                
+                # 当批次达到指定大小时，执行插入操作
+                if len(batch) >= batch_size:
+                    try:
+                        cursor.executemany(
+                            'INSERT OR IGNORE INTO domains (domain, created_date) VALUES (?, ?)',
+                            batch
+                        )
+                        inserted_count += cursor.rowcount
+                        # 对于IGNORE的记录，我们需要单独计算重复数量
+                        duplicate_count += len(batch) - cursor.rowcount
+                        batch = []  # 清空批次
+                        conn.commit()  # 提交事务释放内存
+                    except sqlite3.Error as e:
+                        print(f"数据库插入错误: {e}")
+                        batch = []  # 清空批次
+    
+    # 处理剩余的记录
+    if batch:
+        try:
+            cursor.executemany(
+                'INSERT OR IGNORE INTO domains (domain, created_date) VALUES (?, ?)',
+                batch
+            )
+            inserted_count += cursor.rowcount
+            duplicate_count += len(batch) - cursor.rowcount
+        except sqlite3.Error as e:
+            print(f"数据库插入错误: {e}")
     
     conn.commit()
     conn.close()

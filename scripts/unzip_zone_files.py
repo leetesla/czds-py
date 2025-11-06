@@ -26,10 +26,16 @@ def unzip_zone_files(working_directory="."):
             unzipped_filename = filename[:-3]  # 移除 .gz 后缀
             unzipped_file_path = os.path.join(zonefiles_dir, unzipped_filename)
             
-            # 解压文件
+            # 解压文件（分块处理以节省内存）
             with gzip.open(gz_file_path, 'rb') as gz_file:
                 with open(unzipped_file_path, 'wb') as unzipped_file:
-                    shutil.copyfileobj(gz_file, unzipped_file)
+                    # 分块复制文件内容
+                    chunk_size = 8192  # 8KB chunks
+                    while True:
+                        chunk = gz_file.read(chunk_size)
+                        if not chunk:
+                            break
+                        unzipped_file.write(chunk)
             
             # 删除原始的 .gz 文件
             os.remove(gz_file_path)

@@ -32,12 +32,17 @@ def merge2all():
         return
     
     # 合并文件（使用'w'模式会自动清空已存在的文件）
-    with open(output_file, 'w', encoding='utf-8') as outfile:
+    # 使用缓冲写入方式减少内存使用
+    with open(output_file, 'w', encoding='utf-8', buffering=8192) as outfile:
         for i, txt_file in enumerate(txt_files):
             file_path = os.path.join(input_dir, txt_file)
+            # 分块读取文件内容，避免一次性加载整个文件到内存
             with open(file_path, 'r', encoding='utf-8') as infile:
-                content = infile.read()
-                outfile.write(content)
+                while True:
+                    chunk = infile.read(8192)  # 每次读取8KB
+                    if not chunk:
+                        break
+                    outfile.write(chunk)
                 # 在文件之间添加换行符（除了最后一个文件）
                 if i < len(txt_files) - 1:
                     outfile.write('\n')
