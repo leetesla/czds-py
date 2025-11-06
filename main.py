@@ -9,22 +9,24 @@ from scripts.prepare import set_init_domains
 from scripts.unzip_zone_files import unzip_zone_files
 
 if __name__ == "__main__":
-    set_init_domains()
-    # print("******* download() ********")
+    print("【1】 ******* set_init_domains() ********")
+    # set_init_domains()
+
+    print("【2】 ******* download() ********")
     # download()
 
-    # print("******* unzip_zone_files() ********")
+    print("【3】 ******* unzip_zone_files() ********")
     # unzip_zone_files("download")
 
-    print("********* extract_first_column_from_directory() ********")
+    print("【4】 ********* extract_first_column_from_directory() ********")
     extract_first_column_from_directory(DIR_DOWNLOAD_ZONEFILES, DIR_OUTPUT_DOMAINS_002)
 
-    print("********* diff_domains() ********")
+    print("【5】 ********* diff_domains() ********")
     diff_domains()
 
-    print("******** merge2all() ********")
+    print("【6】 ******** merge2all() ********")
     merge2all()
 
 
-    print("******* find_duplicate() ********")
+    print("【7】 ******* find_duplicate() ********")
     find_duplicate()
