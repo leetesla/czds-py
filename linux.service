@@ -4,16 +4,11 @@ Description=Daily Domain Update Service (Low Memory Mode)
 After=network.target
 
 [Service]
-# 定义环境变量
-Environment=USER=ubuntu
-Environment=GROUP=ubuntu
-Environment=WORK_DIR=/var/www/czds-py
-
 # 1. 用户和工作目录
 # 确保服务以非 root 用户运行以增加安全性
-User=${USER}  # <-- 替换成你的系统用户名
-Group=${GROUP}    # <-- 替换成你的系统用户组（通常和用户名一样）
-WorkingDirectory=/var/www/czds-py  # <-- 替换成你的应用代码的绝对路径
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/var/www/czds-py
 
 # 2. 内存和进程限制
 # 限制内存使用
@@ -27,7 +22,7 @@ Type=simple
 
 # ExecStart: 启动命令。**强烈建议使用虚拟环境中的 Python 解释器**。
 # 使用低内存模式脚本
-ExecStart=/var/www/czds-py/.venv/bin/python /var/www/czds-py/schedule_daily_task.py
+ExecStart=/var/www/czds-py/.venv/bin/python /var/www/czds-py/scripts/schedule_daily_task.py
 
 # 4. 重启策略
 # always: 无论退出代码如何，只要服务停止，就自动重启
