@@ -7,6 +7,7 @@ from app_config.constant import (
     DIR_OUTPUT_DOMAIN_CHUNKS_NEW,
     DIR_OUTPUT_DOMAIN_CHUNKS_OLD,
 )
+from scripts.prepare import set_init_domains
 from scripts.unzip_zone_files import unzip_zone_files
 from util.util import FILE_OUTPUT_DOMAINS_NEW_ALL
 
@@ -19,7 +20,7 @@ def run_task(enable_delay=False):
         enable_delay (bool): 是否启用延迟以减少内存峰值使用
     """
     print("【1】 ******* set_init_domains() ********")
-    # set_init_domains()
+    set_init_domains(DIR_OUTPUT_DOMAIN_CHUNKS_NEW, DIR_OUTPUT_DOMAIN_CHUNKS_OLD)
 
     print("【2】 ******* download() ********")
     # download()
@@ -44,17 +45,17 @@ def run_task(enable_delay=False):
         time.sleep(5)
 
     print("【5】 ********* extract_old_domains() ********")
-    old_domains_ready = extract_first_column_from_directory(
-        DIR_DOWNLOAD_001,
-        DIR_OUTPUT_DOMAINS_001,
-        batch_size=2000,
-    )
-    if not old_domains_ready:
-        print("旧的 TLD 文件不存在或为空，将视所有域名为新增。")
+    # old_domains_ready = extract_first_column_from_directory(
+    #     DIR_DOWNLOAD_001,
+    #     DIR_OUTPUT_DOMAINS_001,
+    #     batch_size=2000,
+    # )
+    # if not old_domains_ready:
+    #     print("旧的 TLD 文件不存在或为空，将视所有域名为新增。")
 
-    if enable_delay:
-        print("等待5秒以释放内存...")
-        time.sleep(5)
+    # if enable_delay:
+    #     print("等待5秒以释放内存...")
+    #     time.sleep(5)
 
     print("【6】 ********* chunk_new_domain_files() ********")
     from scripts.chunked_diff_domain import chunk_directory_domains, diff_chunk_directories_to_file
@@ -74,18 +75,18 @@ def run_task(enable_delay=False):
         time.sleep(5)
 
     print("【7】 ********* chunk_old_domain_files() ********")
-    old_chunks_ready = chunk_directory_domains(
-        DIR_OUTPUT_DOMAINS_001,
-        DIR_OUTPUT_DOMAIN_CHUNKS_OLD,
-        num_chunks=128,
-        batch_size=2000,
-    )
-    if not old_chunks_ready:
-        print("旧域名块不存在，将视所有域名为新增。")
-
-    if enable_delay:
-        print("等待5秒以释放内存...")
-        time.sleep(5)
+    # old_chunks_ready = chunk_directory_domains(
+    #     DIR_OUTPUT_DOMAINS_001,
+    #     DIR_OUTPUT_DOMAIN_CHUNKS_OLD,
+    #     num_chunks=128,
+    #     batch_size=2000,
+    # )
+    # if not old_chunks_ready:
+    #     print("旧域名块不存在，将视所有域名为新增。")
+    #
+    # if enable_delay:
+    #     print("等待5秒以释放内存...")
+    #     time.sleep(5)
 
     print("【8】 ********* diff_chunk_directories() ********")
     diff_chunk_directories_to_file(
