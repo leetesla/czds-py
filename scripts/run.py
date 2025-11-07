@@ -7,6 +7,7 @@ from app_config.constant import (
     DIR_OUTPUT_DOMAIN_CHUNKS_NEW,
     DIR_OUTPUT_DOMAIN_CHUNKS_OLD,
 )
+from download import download
 from scripts.prepare import set_init_domains
 from scripts.unzip_zone_files import unzip_zone_files
 from util.util import FILE_OUTPUT_DOMAINS_NEW_ALL
@@ -19,14 +20,7 @@ def run_task(enable_delay=False):
     Args:
         enable_delay (bool): 是否启用延迟以减少内存峰值使用
     """
-    print("【1】 ******* set_init_domains() ********")
-    set_init_domains(DIR_OUTPUT_DOMAIN_CHUNKS_NEW, DIR_OUTPUT_DOMAIN_CHUNKS_OLD)
 
-    print("【2】 ******* download() ********")
-    # download()
-
-    print("【3】 ******* unzip_zone_files() ********")
-    # unzip_zone_files("download")
 
     print("【4】 ********* extract_new_domains() ********")
     from scripts.extract_first_column import extract_first_column_from_directory

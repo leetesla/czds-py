@@ -15,7 +15,7 @@ def set_init_domains(dir_from, dir_to):
     clean_tld_files(dir_to)
     
     # 将dir_from目录下与TLD对应的.txt文件移动到dir_to目录下
-    move_txt_files(dir_from, dir_to)
+    move_tld_files(dir_from, dir_to)
 
 
 def clean_tld_files(directory):
@@ -41,7 +41,7 @@ def clean_tld_files(directory):
             print(f"文件不存在: {file_path}")
 
 
-def move_txt_files(source_dir, target_dir):
+def move_tld_files(source_dir, target_dir):
     """将源目录下与TLD对应的.txt文件移动到目标目录"""
     # 确保目标目录存在
     os.makedirs(target_dir, exist_ok=True)

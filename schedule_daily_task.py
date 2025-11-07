@@ -25,7 +25,9 @@ import logging
 from datetime import datetime, timedelta
 import threading
 
-from scripts.run import run_task
+from app_config.constant import DIR_OUTPUT_DOMAIN_CHUNKS_NEW, DIR_OUTPUT_DOMAIN_CHUNKS_OLD
+from scripts.prepare import set_init_domains
+from scripts.run import run_task, run_task_low_memory
 
 # 配置日志
 logging.basicConfig(
@@ -60,7 +62,10 @@ def daily_task():
     
     # 任务执行
     # time.sleep(2)
-    run_task()
+    # 移动前一天的 domain chunks new作为 今天的 domain chunks old
+    set_init_domains(DIR_OUTPUT_DOMAIN_CHUNKS_NEW, DIR_OUTPUT_DOMAIN_CHUNKS_OLD)
+    run_task_low_memory()
+
     
     logger.info("每日任务执行完成")
 
