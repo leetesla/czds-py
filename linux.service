@@ -27,7 +27,7 @@ Type=simple
 
 # ExecStart: 启动命令。**强烈建议使用虚拟环境中的 Python 解释器**。
 # 使用低内存模式脚本
-ExecStart=${WORK_DIR}/.venv/bin/python ${WORK_DIR}/schedule_daily_task.py
+ExecStart=/var/www/czds-py/.venv/bin/python /var/www/czds-py/schedule_daily_task.py
 
 # 4. 重启策略
 # always: 无论退出代码如何，只要服务停止，就自动重启
