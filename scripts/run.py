@@ -7,6 +7,7 @@ from app_config.constant import (
     DIR_OUTPUT_DOMAIN_CHUNKS_NEW,
     DIR_OUTPUT_DOMAIN_CHUNKS_OLD,
 )
+from scripts.unzip_zone_files import unzip_zone_files
 from util.util import FILE_OUTPUT_DOMAINS_NEW_ALL
 
 

@@ -12,7 +12,33 @@ from datetime import datetime, timedelta
 from util.util import DB_FILE, FILE_OUTPUT_DOMAINS_NEW_ALL
 
 
-# 从util模块导入数据库文件路径
+def _deduplicate_domain_records(cursor):
+    """
+    清理domains表中的重复域名记录，只保留最新的一条
+    """
+    cursor.execute('''
+        SELECT 1
+        FROM domains
+        GROUP BY domain
+        HAVING COUNT(*) > 1
+        LIMIT 1
+    ''')
+    if cursor.fetchone() is None:
+        return 0
+    
+    cursor.execute('''
+        DELETE FROM domains AS older
+        WHERE EXISTS (
+            SELECT 1
+            FROM domains AS newer
+            WHERE newer.domain = older.domain
+              AND (
+                  newer.created_date > older.created_date
+                  OR (newer.created_date = older.created_date AND newer.id > older.id)
+              )
+        )
+    ''')
+    return cursor.rowcount
 
 
 def init_database():
@@ -25,19 +51,22 @@ def init_database():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     
-    # 创建域名表，使用自增ID和日期组合确保唯一性
+    # 创建域名表，使用域名确保唯一性
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS domains (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            domain TEXT NOT NULL,
-            created_date DATE NOT NULL,
-            UNIQUE(domain, created_date)
+            domain TEXT NOT NULL UNIQUE,
+            created_date DATE NOT NULL
         )
     ''')
     
-    # 创建索引提高查询效率
+    removed_rows = _deduplicate_domain_records(cursor)
+    if removed_rows:
+        print(f"清理了 {removed_rows} 条重复域名记录，确保域名唯一")
+    
+    # 创建唯一索引确保域名不重复
     cursor.execute('''
-        CREATE INDEX IF NOT EXISTS idx_domain ON domains(domain)
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_domains_domain_unique ON domains(domain)
     ''')
     
     cursor.execute('''
@@ -75,6 +104,29 @@ def store_domains_to_db(domains_file, batch_size=1000):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     
+    insert_sql = 'INSERT OR IGNORE INTO domains (domain, created_date) VALUES (?, ?)'
+    update_sql = 'UPDATE domains SET created_date = ? WHERE domain = ?'
+    
+    def flush_batch(batch_items):
+        """将批次数据写入数据库并更新重复数据的日期"""
+        nonlocal inserted_count, duplicate_count
+        if not batch_items:
+            return
+        
+        cursor.executemany(insert_sql, batch_items)
+        inserted = cursor.rowcount if cursor.rowcount is not None and cursor.rowcount >= 0 else 0
+        duplicates = len(batch_items) - inserted
+        if duplicates < 0:
+            duplicates = 0
+        
+        update_params = [(created_date, domain) for domain, created_date in batch_items]
+        cursor.executemany(update_sql, update_params)
+        
+        conn.commit()
+        
+        inserted_count += inserted
+        duplicate_count += duplicates
+    
     # 读取域名文件并插入数据库（分批处理以节省内存）
     inserted_count = 0
     duplicate_count = 0
@@ -89,15 +141,8 @@ def store_domains_to_db(domains_file, batch_size=1000):
                 # 当批次达到指定大小时，执行插入操作
                 if len(batch) >= batch_size:
                     try:
-                        cursor.executemany(
-                            'INSERT OR IGNORE INTO domains (domain, created_date) VALUES (?, ?)',
-                            batch
-                        )
-                        inserted_count += cursor.rowcount
-                        # 对于IGNORE的记录，我们需要单独计算重复数量
-                        duplicate_count += len(batch) - cursor.rowcount
+                        flush_batch(batch)
                         batch = []  # 清空批次
-                        conn.commit()  # 提交事务释放内存
                         
                         # 每处理一定数量的行后打印进度
                         if line_num % (batch_size * 10) == 0:
@@ -109,13 +154,7 @@ def store_domains_to_db(domains_file, batch_size=1000):
     # 处理剩余的记录
     if batch:
         try:
-            cursor.executemany(
-                'INSERT OR IGNORE INTO domains (domain, created_date) VALUES (?, ?)',
-                batch
-            )
-            inserted_count += cursor.rowcount
-            duplicate_count += len(batch) - cursor.rowcount
-            conn.commit()  # 提交事务
+            flush_batch(batch)
         except sqlite3.Error as e:
             print(f"数据库插入错误: {e}")
     
