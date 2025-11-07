@@ -1,31 +1,42 @@
 [Unit]
-Description=Daily Domain Update Service
+Description=Daily Domain Update Service (Low Memory Mode)
 # 启动顺序和依赖关系
 After=network.target
 
 [Service]
+# 定义环境变量
+Environment=USER=ubuntu
+Environment=GROUP=ubuntu
+Environment=WORK_DIR=/var/www/czds-py
+
 # 1. 用户和工作目录
 # 确保服务以非 root 用户运行以增加安全性
-User=ubuntu  # <-- 替换成你的系统用户名
-Group=ubuntu    # <-- 替换成你的系统用户组（通常和用户名一样）
-WorkingDirectory=/var/www/czds-py  # <-- 替换成你的应用代码的绝对路径
+User=${USER}  # <-- 替换成你的系统用户名
+Group=${GROUP}    # <-- 替换成你的系统用户组（通常和用户名一样）
+WorkingDirectory=${WORK_DIR}  # <-- 替换成你的应用代码的绝对路径
 
-# 2. 如何执行你的应用
+# 2. 内存和进程限制
+# 限制内存使用
+MemoryLimit=1G
+# 限制CPU使用
+#CPUQuota=50%
+
+# 3. 如何执行你的应用
 # Type=simple 是最常见的类型，systemd 认为第一个执行的进程就是主进程。
 Type=simple
 
 # ExecStart: 启动命令。**强烈建议使用虚拟环境中的 Python 解释器**。
-# 假设你的应用入口脚本是 app.py
-ExecStart=/var/www/czds-py/.venv/bin/python /var/www/czds-py/schedule_daily_task.py
+# 使用低内存模式脚本
+ExecStart=${WORK_DIR}/.venv/bin/python ${WORK_DIR}/schedule_daily_task.py
 
-# 3. 重启策略
+# 4. 重启策略
 # always: 无论退出代码如何，只要服务停止，就自动重启
 # on-failure: 只有在非零退出码时才重启
 Restart=always
 # 设定重启前等待的秒数
 RestartSec=5
 
-# 4. 日志设置 (可选，但推荐)
+# 5. 日志设置 (可选，但推荐)
 # 将日志输出到 systemd journal
 StandardOutput=journal
 StandardError=journal

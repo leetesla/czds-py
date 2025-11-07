@@ -7,9 +7,7 @@ from app_config.constant import (
     DIR_OUTPUT_DOMAIN_CHUNKS_NEW,
     DIR_OUTPUT_DOMAIN_CHUNKS_OLD,
 )
-from download import download
-from scripts.prepare import set_init_domains
-from scripts.unzip_zone_files import unzip_zone_files
+
 from util.util import FILE_OUTPUT_DOMAINS_NEW_ALL
 
 
@@ -20,7 +18,6 @@ def run_task(enable_delay=False):
     Args:
         enable_delay (bool): 是否启用延迟以减少内存峰值使用
     """
-
 
     print("【4】 ********* extract_new_domains() ********")
     from scripts.extract_first_column import extract_first_column_from_directory
@@ -38,7 +35,7 @@ def run_task(enable_delay=False):
         print("等待5秒以释放内存...")
         time.sleep(5)
 
-    print("【5】 ********* extract_old_domains() ********")
+    # print("【5】 ********* extract_old_domains() ********")
     # old_domains_ready = extract_first_column_from_directory(
     #     DIR_DOWNLOAD_001,
     #     DIR_OUTPUT_DOMAINS_001,
@@ -68,7 +65,7 @@ def run_task(enable_delay=False):
         print("等待5秒以释放内存...")
         time.sleep(5)
 
-    print("【7】 ********* chunk_old_domain_files() ********")
+    # print("【7】 ********* chunk_old_domain_files() ********")
     # old_chunks_ready = chunk_directory_domains(
     #     DIR_OUTPUT_DOMAINS_001,
     #     DIR_OUTPUT_DOMAIN_CHUNKS_OLD,

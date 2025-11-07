@@ -3,19 +3,6 @@ import shutil
 import glob
 
 from app_config.config import get_tlds_from_config
-from app_config.constant import DIR_OUTPUT_DOMAINS_001, DIR_OUTPUT_DOMAINS_002
-
-
-def set_init_domains(dir_from, dir_to):
-    # 确保必要的目录存在
-    os.makedirs(dir_from, exist_ok=True)
-    os.makedirs(dir_to, exist_ok=True)
-    
-    # 清理dir_to目录下与TLD对应的.txt文件
-    clean_tld_files(dir_to)
-    
-    # 将dir_from目录下与TLD对应的.txt文件移动到dir_to目录下
-    move_tld_files(dir_from, dir_to)
 
 
 def clean_tld_files(directory):
