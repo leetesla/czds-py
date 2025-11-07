@@ -251,7 +251,7 @@ def find_duplicate(default_days=7):
     
     # 获取命令行参数
     if len(sys.argv) >= 2:
-        output_file = sys.argv[1]
+        # output_file = sys.argv[1]
         html_output_file = sys.argv[2] if len(sys.argv) > 2 else default_html_output
         days = int(sys.argv[3]) if len(sys.argv) > 3 else default_days
     else:
