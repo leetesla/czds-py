@@ -66,133 +66,72 @@ def extract_first_column_from_directory(input_dir, output_dir, batch_size=5000):
 
 def _process_file_with_grouping(input_file, output_file, batch_size=5000):
     """
-    按组处理单个文件，减少内存使用
+    处理单个TLD文件，提取第一列域名并写入输出文件
     
     Args:
         input_file (str): 输入文件路径
         output_file (str): 输出文件路径
-        batch_size (int): 批处理大小
+        batch_size (int): 批处理大小，用于控制读取缓冲
         
     Returns:
         bool: 是否处理成功
     """
     try:
-        # 统计信息
         total_lines = 0
         total_processed = 0
-        total_duplicates = 0
         total_numeric_start = 0
         total_dash_start = 0
-        
-        # 使用字典存储每个组的域名，按首字母分组以减少内存峰值
-        groups = {}
-        
-        # 初始化26个字母组 + 数字组 + 其他组
-        for i in range(26):
-            groups[chr(ord('a') + i)] = []
-        groups['digit'] = []
-        groups['other'] = []
-        
-        print("  正在读取和分组域名...")
-        
-        # 第一步：读取文件并将域名按首字母分组
-        with open(input_file, 'r', encoding='utf-8') as infile:
+
+        print("  正在读取并写出域名...")
+
+        with open(input_file, 'r', encoding='utf-8') as infile, open(output_file, 'w', encoding='utf-8') as outfile:
             batch_lines = []
-            
+
+            def flush_batch(lines):
+                nonlocal total_processed, total_numeric_start, total_dash_start
+                for raw_line in lines:
+                    columns = raw_line.split()
+                    if not columns:
+                        continue
+                    first_column = normalize_domain(columns[0])
+                    if not first_column:
+                        continue
+                    if not filter_domain(first_column):
+                        continue
+
+                    outfile.write(first_column + '\n')
+                    total_processed += 1
+
+                    if first_column and first_column[0].isdigit():
+                        total_numeric_start += 1
+                    elif first_column and first_column[0] == '-':
+                        total_dash_start += 1
+
             for line in infile:
                 line = line.strip()
                 if not line:
                     continue
-                
                 total_lines += 1
                 batch_lines.append(line)
-                
-                # 批量处理以提高效率
+
                 if len(batch_lines) >= batch_size:
-                    _group_lines(batch_lines, groups)
+                    flush_batch(batch_lines)
                     batch_lines = []
-            
-            # 处理剩余行
+
             if batch_lines:
-                _group_lines(batch_lines, groups)
-        
+                flush_batch(batch_lines)
+
         print(f"  总共读取 {total_lines} 行数据")
-        
-        # 第二步：对每个组进行去重并写入输出文件
-        print("  正在去重并生成输出...")
-        
-        with open(output_file, 'w', encoding='utf-8') as outfile:
-            # 处理每个组
-            for group_key, domains in groups.items():
-                if domains:  # 只处理非空组
-                    # 对组内域名去重
-                    seen = set()
-                    unique_domains = []
-                    
-                    for domain in domains:
-                        if domain not in seen:
-                            seen.add(domain)
-                            unique_domains.append(domain)
-                            
-                            # 统计特殊域名
-                            if domain and domain[0].isdigit():
-                                total_numeric_start += 1
-                            elif domain and domain[0] == '-':
-                                total_dash_start += 1
-                        else:
-                            total_duplicates += 1
-                    
-                    # 写入去重后的域名
-                    for domain in unique_domains:
-                        outfile.write(domain + '\n')
-                    
-                    total_processed += len(unique_domains)
-                    
-                    # 清理组数据以释放内存
-                    groups[group_key] = []
-        
         print(f"  处理后域名数: {total_processed}")
-        print(f"  重复域名数: {total_duplicates}")
         print(f"  以数字开头: {total_numeric_start}")
         print(f"  以连字符开头: {total_dash_start}")
         print(f"  已生成文件: {output_file}")
-        
+
         return True
-        
+
     except Exception as e:
         print(f"处理文件 {input_file} 时出错: {e}")
         return False
-
-
-def _group_lines(lines, groups):
-    """
-    将行数据按域名首字母分类到不同组
-    
-    Args:
-        lines (list): 行数据列表
-        groups (dict): 分组字典
-    """
-    for line in lines:
-        columns = line.split()
-        if columns:
-            first_column = columns[0]
-            first_column = normalize_domain(first_column)
-            
-            # 只处理符合过滤条件的域名
-            if filter_domain(first_column):
-                # 根据首字母确定组
-                if first_column:
-                    first_char = first_column[0].lower()
-                    if first_char.isalpha():
-                        group_key = first_char
-                    elif first_char.isdigit():
-                        group_key = 'digit'
-                    else:
-                        group_key = 'other'
-                    
-                    # 添加到对应组
-                    if group_key in groups:
-                        groups[group_key].append(first_column)
 
 
 def extract_first_column_from_file_batched(input_file, output_file, batch_size=10000):

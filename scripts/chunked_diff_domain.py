@@ -7,6 +7,7 @@
 """
 
 import os
+import glob
 import hashlib
 import tempfile
 import shutil
@@ -165,6 +166,170 @@ def _process_new_chunk_batch(lines, old_domains, out_fp):
             # 应用过滤规则
             if filter_domain(domain):
                 out_fp.write(domain + "\n")
+
+
+def chunk_directory_domains(input_dir, chunk_dir, num_chunks=100, batch_size=2000):
+    """
+    遍历目录中的TLD文件，抽取第一列域名，按哈希分块，并对每个块去重
+    """
+    _prepare_chunk_dir(chunk_dir)
+
+    if not os.path.exists(input_dir):
+        print(f"目录 {input_dir} 不存在，已清空 {chunk_dir}")
+        return False
+
+    txt_files = sorted(glob.glob(os.path.join(input_dir, "*.txt")))
+    if not txt_files:
+        print(f"目录 {input_dir} 中没有找到 .txt 文件，已清空 {chunk_dir}")
+        return False
+
+    print(f"在 {input_dir} 中找到 {len(txt_files)} 个 TLD 文件，开始分块...")
+    chunk_files = _open_chunk_files(chunk_dir, num_chunks)
+    total_domains = 0
+
+    try:
+        for txt_file in txt_files:
+            print(f"  正在处理 {txt_file}")
+            total_domains += _process_tld_file_for_chunking(txt_file, chunk_files, num_chunks, batch_size)
+    finally:
+        for fp in chunk_files.values():
+            fp.close()
+
+    print(f"共写入 {total_domains} 个域名，开始对块文件去重...")
+    _deduplicate_chunk_files(chunk_dir)
+    return True
+
+
+def diff_chunk_directories_to_file(new_chunk_dir, old_chunk_dir, output_file, num_chunks=100):
+    """
+    比较新旧块文件，找出新增域名并写入输出文件
+    """
+    output_dir = os.path.dirname(output_file)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+    total_new_domains = 0
+
+    with open(output_file, "w", encoding="utf-8") as out_fp:
+        for chunk_id in range(num_chunks):
+            chunk_name = f"chunk_{chunk_id:03d}.txt"
+            new_chunk_file = os.path.join(new_chunk_dir, chunk_name)
+            if not os.path.exists(new_chunk_file):
+                continue
+
+            old_chunk_file = os.path.join(old_chunk_dir, chunk_name)
+            old_domains = _load_domains_to_set(old_chunk_file)
+            new_domains = _write_new_domains_from_chunk(new_chunk_file, old_domains, out_fp)
+            total_new_domains += new_domains
+            print(f"  {chunk_name} 新增 {new_domains} 个域名")
+
+    print(f"新增域名总数: {total_new_domains}")
+    return total_new_domains
+
+
+def _prepare_chunk_dir(chunk_dir):
+    """删除并重新创建块目录，确保没有旧数据"""
+    if os.path.exists(chunk_dir):
+        shutil.rmtree(chunk_dir)
+    os.makedirs(chunk_dir, exist_ok=True)
+
+
+def _open_chunk_files(chunk_dir, num_chunks):
+    """为每个哈希块创建写入文件句柄"""
+    chunk_files = {}
+    for chunk_id in range(num_chunks):
+        chunk_path = os.path.join(chunk_dir, f"chunk_{chunk_id:03d}.txt")
+        chunk_files[chunk_id] = open(chunk_path, "w", encoding="utf-8")
+    return chunk_files
+
+
+def _process_tld_file_for_chunking(file_path, chunk_files, num_chunks, batch_size):
+    """读取TLD文件，按批次写入对应块"""
+    total = 0
+    batch = []
+
+    with open(file_path, "r", encoding="utf-8") as infile:
+        for line in infile:
+            batch.append(line)
+            if len(batch) >= batch_size:
+                total += _flush_lines_to_chunks(batch, chunk_files, num_chunks)
+                batch = []
+
+        if batch:
+            total += _flush_lines_to_chunks(batch, chunk_files, num_chunks)
+
+    return total
+
+
+def _flush_lines_to_chunks(lines, chunk_files, num_chunks):
+    """将一批原始行写入对应块"""
+    processed = 0
+    for raw_line in lines:
+        columns = raw_line.strip().split()
+        if not columns:
+            continue
+        domain = normalize_domain(columns[0])
+        if not domain or not filter_domain(domain):
+            continue
+        chunk_id = hash_domain(domain, num_chunks)
+        chunk_files[chunk_id].write(domain + "\n")
+        processed += 1
+    return processed
+
+
+def _deduplicate_chunk_files(chunk_dir):
+    """对目录内的块文件逐个去重"""
+    chunk_files = sorted(glob.glob(os.path.join(chunk_dir, "chunk_*.txt")))
+    for chunk_file in chunk_files:
+        _deduplicate_chunk_file(chunk_file)
+
+
+def _deduplicate_chunk_file(chunk_file):
+    """读取块文件，去除重复域名"""
+    seen = set()
+    duplicates = 0
+    temp_file = chunk_file + ".tmp"
+
+    with open(chunk_file, "r", encoding="utf-8") as infile, open(temp_file, "w", encoding="utf-8") as outfile:
+        for line in infile:
+            domain = line.strip()
+            if not domain:
+                continue
+            if domain not in seen:
+                seen.add(domain)
+                outfile.write(domain + "\n")
+            else:
+                duplicates += 1
+
+    os.replace(temp_file, chunk_file)
+    print(f"  {os.path.basename(chunk_file)} 去重完成, 保留 {len(seen)} 个域名, 去除 {duplicates} 个重复")
+
+
+def _load_domains_to_set(chunk_file):
+    """将块文件中的域名加载为集合"""
+    domains = set()
+    if not os.path.exists(chunk_file):
+        return domains
+
+    with open(chunk_file, "r", encoding="utf-8") as infile:
+        for line in infile:
+            domain = line.strip()
+            if domain:
+                domains.add(domain)
+    return domains
+
+
+def _write_new_domains_from_chunk(new_chunk_file, old_domains, out_fp):
+    """将不在旧集合中的域名写入输出文件"""
+    added = 0
+    with open(new_chunk_file, "r", encoding="utf-8") as infile:
+        for line in infile:
+            domain = line.strip()
+            if not domain:
+                continue
+            if domain not in old_domains:
+                out_fp.write(domain + "\n")
+                added += 1
+    return added
 
 
 def diff_domains():
