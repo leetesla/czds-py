@@ -66,6 +66,7 @@ def daily_task():
     # 在这里添加您的实际任务逻辑
     # 例如：数据处理、文件操作、API调用等
     print(f"每日任务执行时间: {datetime.now()}")
+    process_task()
     
     # 任务执行
     # time.sleep(2)
