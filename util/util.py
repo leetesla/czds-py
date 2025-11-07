@@ -95,7 +95,7 @@ DIR_OUTPUT_RESULTS_TODAY = os.path.join(DIR_OUTPUT_DOMAINS_RESULTS, get_date_str
 
 FILE_OUTPUT_DOMAINS_NEW_ALL = os.path.join(DIR_OUTPUT_RESULTS_TODAY, 'all.txt')
 FILE_OUTPUT_DOMAINS_DUPLICATE = os.path.join(DIR_OUTPUT_RESULTS_TODAY, 'domains-duplicate.txt')
-HTML_OUTPUT_DOMAINS_DUPLICATE = os.path.join(DIR_OUTPUT_RESULTS_TODAY, 'domains-duplicate.html')
+HTML_OUTPUT_DOMAINS_DUPLICATE = os.path.join(DIR_OUTPUT_RESULTS_TODAY, 'domains', 'domains-duplicate.html')
 
 # 添加数据库文件路径
 DB_FILE = os.path.join('output', 'domains.db')
