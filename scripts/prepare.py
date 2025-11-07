@@ -12,13 +12,13 @@ def set_init_domains(dir_from, dir_to):
     os.makedirs(dir_to, exist_ok=True)
     
     # 清理dir_to目录下与TLD对应的.txt文件
-    clean_txt_files(dir_to)
+    clean_tld_files(dir_to)
     
     # 将dir_from目录下与TLD对应的.txt文件移动到dir_to目录下
     move_txt_files(dir_from, dir_to)
 
 
-def clean_txt_files(directory):
+def clean_tld_files(directory):
     """清理指定目录下与TLD对应的.txt文件"""
     tlds = get_tlds_from_config()
     if not tlds:
