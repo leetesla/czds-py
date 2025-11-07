@@ -213,10 +213,11 @@ def find_duplicate_domains_from_db_chunked(output_file, html_output_file=None, d
         
         # 将html_output_file复制到DIR_PUBLIC目录下，重命名为date_str.html
         date_str = get_date_string()
-        public_html_file = os.path.join(DIR_PUBLIC, date_str + '.html')
+        dir_public_domains = os.path.join(DIR_PUBLIC, 'domains')
+        public_html_file = os.path.join(dir_public_domains, date_str + '.html')
         try:
             # 确保public目录存在
-            os.makedirs(DIR_PUBLIC, exist_ok=True)
+            os.makedirs(dir_public_domains, exist_ok=True)
             # 复制文件
             shutil.copy2(html_output_file, public_html_file)
             print(f"HTML文件已复制到: {public_html_file}")
