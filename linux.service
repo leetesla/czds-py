@@ -13,7 +13,7 @@ Environment=WORK_DIR=/var/www/czds-py
 # 确保服务以非 root 用户运行以增加安全性
 User=${USER}  # <-- 替换成你的系统用户名
 Group=${GROUP}    # <-- 替换成你的系统用户组（通常和用户名一样）
-WorkingDirectory=${WORK_DIR}  # <-- 替换成你的应用代码的绝对路径
+WorkingDirectory=/var/www/czds-py  # <-- 替换成你的应用代码的绝对路径
 
 # 2. 内存和进程限制
 # 限制内存使用
