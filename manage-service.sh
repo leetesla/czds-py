@@ -28,6 +28,8 @@ elif [ "$gen_choice" = "2" ]; then
         --output-path . \
         --service-name $SERVICE_NAME
     echo "服务文件$SERVICE_NAME 已生成，位于当前目录"
+    echo "你可以手动执行以下命令复制到/etc/systemd/system/目录下："
+    echo "sudo cp $SERVICE_NAME /etc/systemd/system/$SERVICE_NAME"
     echo "退出脚本"
     exit 0
 else
