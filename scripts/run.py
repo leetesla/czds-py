@@ -102,7 +102,7 @@ def run_task(enable_delay=False):
 
     print("【10】 ******* find_duplicate() ********")
     from scripts.find_duplicate_domains import find_duplicate
-    find_duplicate(1)
+    find_duplicate(0)
     return True
 
 
