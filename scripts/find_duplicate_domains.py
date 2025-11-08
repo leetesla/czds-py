@@ -170,6 +170,17 @@ def find_duplicate_domains_from_db_chunked(output_file, html_output_file=None, d
         days (int): 读取最近几天的数据，默认7天
         batch_size (int): 批处理大小
     """
+    # 确保输出文件的目录存在
+    output_dir = os.path.dirname(output_file)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+    
+    # 如果有HTML输出文件，也确保其目录存在
+    if html_output_file:
+        html_output_dir = os.path.dirname(html_output_file)
+        if html_output_dir:
+            os.makedirs(html_output_dir, exist_ok=True)
+    
     # 存储标准化域名及其原始形式
     domain_map = defaultdict(list)
     
