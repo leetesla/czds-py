@@ -85,7 +85,7 @@ def generate_html_output(duplicates, html_output_file):
             outfile.write('</head>\n')
             outfile.write('<body>\n')
             outfile.write(f'    <h1>{get_date_string()} 重复域名列表 (共{len(duplicates)}组)</h1>\n')
-            outfile.write('    <p>点击域名可直接访问（需要网络连接）</p>\n')
+            # outfile.write('    <p>点击域名可直接访问</p>\n')
             
             for normalized, originals in sorted(duplicates.items()):
                 outfile.write('    <div class="domain-group">\n')
